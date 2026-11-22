@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>「は」と「わ」｜特別支援教材開発研究所</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fdfaf3; --ink:#333; --sub:#888;
+  --word:#3b7dd8; --wordbg:#eaf2fd;
+  --part:#e0603a; --partbg:#fdece6;
+  --card:#fff; --line:#d9d4c7; --ok:#2e9e5b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overscroll-behavior:none}
+body{
+  font-family:'Zen Maru Gothic','BIZ UDPGothic','UD デジタル 教科書体 N-R',sans-serif;
+  background:var(--bg);color:var(--ink);
+  height:100vh;height:100dvh;overflow:hidden;
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;
+}
+button{font-family:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+.screen{display:none;height:100%;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px max(16px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));gap:18px}
+.screen.on{display:flex}
+
+/* ===== メニュー ===== */
+h1{font-size:clamp(28px,6vw,46px);font-weight:700;text-align:center;line-height:1.4}
+h1 .p{color:var(--part)}
+.setting{display:flex;flex-direction:column;align-items:center;gap:8px}
+.setting .label{font-size:clamp(16px,3vw,20px);color:var(--sub)}
+.seg{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.seg button{min-width:44px;min-height:48px;padding:6px 18px;border:2px solid var(--line);background:var(--card);
+  border-radius:14px;font-size:clamp(17px,3.2vw,22px);font-weight:700}
+.seg button.sel{border-color:var(--word);background:var(--wordbg);color:var(--word)}
+.start{min-height:64px;padding:10px 48px;border:none;border-radius:20px;background:var(--part);color:#fff;
+  font-size:clamp(24px,5vw,32px);font-weight:700;box-shadow:0 4px 0 #b84a2b;margin-top:6px}
+.start:active{transform:translateY(3px);box-shadow:0 1px 0 #b84a2b}
+footer{font-size:12px;color:var(--sub);text-align:center}
+
+/* ===== もんだい ===== */
+#q{justify-content:space-between}
+.top{width:100%;display:flex;justify-content:space-between;align-items:center}
+.icon{width:56px;height:56px;border:2px solid var(--line);background:var(--card);border-radius:50%;
+  font-size:24px;display:flex;align-items:center;justify-content:center}
+.icon.hide{visibility:hidden}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:60%}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dots i.done{background:var(--ok)}
+.dots i.now{background:var(--part)}
+
+.middle{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;width:100%}
+.sentence{font-size:clamp(34px,8vw,68px);font-weight:700;line-height:1.9;text-align:center;
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;column-gap:.5em;row-gap:.2em;max-width:100%}
+.bun{display:inline-flex;align-items:center;white-space:nowrap}
+.frame .w{padding:0 .12em;border:3px solid var(--word);border-radius:.25em;background:var(--wordbg)}
+.frame .pt{padding:0 .06em}
+.frame .pt{color:var(--part)}
+.blank{display:inline-block;width:1.05em;height:1.05em;line-height:1;border:3px dashed var(--sub);border-radius:.15em;vertical-align:middle;text-align:center}
+.blank.filled{border-color:transparent}
+.blank .ch{position:relative;top:-.056em}
+.blank.filled.wa{color:var(--word)}
+.blank.filled.ha{color:var(--part)}
+@keyframes attach{from{transform:translateX(.7em);opacity:.25}to{transform:translateX(0);opacity:1}}
+.blank.attach{animation:attach .6s ease-out}
+
+.blank{position:relative;top:-.14em}
+.maru{position:absolute;left:50%;top:50%;width:1.55em;height:1.55em;margin:-.775em 0 0 -.775em;
+  border:.09em solid #e53935;border-radius:50%;pointer-events:none;display:none}
+.maru.on{display:block;animation:maru .35s ease-out}
+@keyframes maru{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}
+.yomi{height:1.6em;line-height:1.6em;font-size:clamp(20px,4vw,30px);font-weight:700;text-align:center}
+.yomi .r{color:var(--word)} .yomi .k{color:var(--part)}
+.msg{height:3em;line-height:1.5em;font-size:clamp(17px,3.2vw,22px);color:var(--sub);text-align:center}
+
+.bottom{display:flex;gap:clamp(16px,5vw,40px);justify-content:center;align-items:center;height:calc(clamp(96px,22vw,140px) + 8px);flex-shrink:0}
+.choice{width:clamp(96px,22vw,140px);height:clamp(96px,22vw,140px);border:3px solid var(--line);background:var(--card);
+  border-radius:24px;font-size:clamp(52px,11vw,80px);font-weight:700;box-shadow:0 5px 0 var(--line)}
+.choice:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line)}
+.choice:disabled{opacity:.3;box-shadow:none}
+.next{min-height:72px;padding:10px 44px;border:none;border-radius:20px;background:var(--ok);color:#fff;
+  font-size:clamp(26px,5vw,34px);font-weight:700;box-shadow:0 4px 0 #227547}
+.next:active{transform:translateY(3px);box-shadow:0 1px 0 #227547}
+.hidden{display:none!important}
+
+/* ===== おわり ===== */
+.end-title{font-size:clamp(40px,9vw,72px);font-weight:700;color:var(--part)}
+.row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.sub-btn{min-height:60px;padding:8px 28px;border:2px solid var(--line);background:var(--card);border-radius:18px;
+  font-size:clamp(20px,4vw,26px);font-weight:700}
+
+@media (orientation:landscape) and (max-height:500px){
+  .screen{gap:10px}
+  #menu{gap:6px;padding-top:8px;padding-bottom:8px}
+  #menu h1{font-size:clamp(22px,7vh,32px)}
+  #menu .seg button{min-height:44px;padding:4px 16px}
+  #menu .start{min-height:50px;padding:6px 40px;margin-top:0}
+  #menu footer{display:none}
+  .sentence{font-size:clamp(28px,7vh,52px);line-height:1.7}
+  .bottom{height:92px}
+  .choice{width:84px;height:84px;font-size:48px}
+  .setting{flex-direction:row;gap:12px}
+}
+</style>
+</head>
+<body>
+
+<!-- メニュー -->
+<section id="menu" class="screen on">
+  <h1>「<span class="p">は</span>」と「わ」</h1>
+  <div class="setting">
+    <div class="label">ぶん</div>
+    <div class="seg" data-key="stage">
+      <button data-v="short">みじかい</button>
+      <button data-v="long">ながい</button>
+      <button data-v="mix">まぜる</button>
+    </div>
+  </div>
+  <div class="setting">
+    <div class="label">もんだい</div>
+    <div class="seg" data-key="count">
+      <button data-v="5">5</button>
+      <button data-v="10">10</button>
+    </div>
+  </div>
+  <div class="setting">
+    <div class="label">ことばの わく</div>
+    <div class="seg" data-key="frame">
+      <button data-v="on">あり</button>
+      <button data-v="off">なし</button>
+    </div>
+  </div>
+  <div class="setting">
+    <div class="label">よみあげ</div>
+    <div class="seg" data-key="voice">
+      <button data-v="on">あり</button>
+      <button data-v="off">なし</button>
+    </div>
+  </div>
+  <button class="start" id="startBtn">はじめる</button>
+  <footer>特別支援教材開発研究所</footer>
+</section>
+
+<!-- もんだい -->
+<section id="q" class="screen">
+  <div class="top">
+    <button class="icon" id="backBtn" aria-label="メニューへ">✕</button>
+    <div class="dots" id="dots"></div>
+    <button class="icon" id="speakBtn" aria-label="よみあげ">🔊</button>
+  </div>
+  <div class="middle">
+    <div class="sentence" id="sentence"></div>
+    <div class="yomi" id="yomi"></div>
+    <div class="msg" id="msg"></div>
+  </div>
+  <div class="bottom">
+    <button class="choice" data-c="わ">わ</button>
+    <button class="choice" data-c="は">は</button>
+    <button class="next hidden" id="nextBtn">つぎへ</button>
+  </div>
+</section>
+
+<!-- おわり -->
+<section id="end" class="screen">
+  <div class="end-title">おしまい</div>
+  <div class="row">
+    <button class="sub-btn" id="againBtn">もういちど</button>
+    <button class="sub-btn" id="toMenuBtn">メニューへ</button>
+  </div>
+</section>
+
+<script>
+/* ============================================================
+   もんだいデータ
+   ・ぶんせつは半角スペースで区切る
+   ・「ことば+くっつき」の形で + の右がくっつきのことば
+   ・| の右は読み上げ用の漢字まじり文（画面には出さない）
+   ・＊ が「わ」の音のあなうめ
+       ＊ が + の右（くっつき）にある → こたえは「は」
+       ＊ が + の左（ことばの中）にある → こたえは「わ」
+   ============================================================ */
+var ITEMS = {
+  short: [
+    'ぼく+＊ げんき|僕は元気',
+    'ねこ+＊ ねる|猫は寝る',
+    'いぬ+＊ はしる|犬は走る',
+    'そら+＊ あおい|空は青い',
+    'ぞう+＊ おおきい|象は大きい',
+    'うさぎ+＊ かわいい|ウサギは可愛い',
+    'やま+＊ たかい|山は高い',
+    'うみ+＊ ひろい|海は広い',
+    'せんせい+＊ やさしい|先生は優しい',
+    'わたし+＊ いく|わたしは行く',
+    '＊に+が いる|ワニがいる',
+    'でん＊+が なる|電話が鳴る',
+    'か＊+で あそぶ|川で遊ぶ',
+    'に＊とり+が なく|ニワトリが鳴く',
+    '＊たあめ+を たべる|わたあめを食べる',
+    '＊なげ+を する|輪投げをする',
+    'みんな+が ＊らう|みんなが笑う',
+    'に＊+に でる|庭に出る'
+  ],
+  long: [
+    'ぼく+＊ がっこう+へ いく|僕は学校へ行く',
+    'ねこ+＊ にわ+で あそぶ|猫は庭で遊ぶ',
+    'いもうと+＊ でんわ+を かける|妹は電話をかける',
+    'おとうさん+＊ かいしゃ+へ いく|お父さんは会社へ行く',
+    'わたし+＊ りんご+を たべる|わたしはリンゴを食べる',
+    'せんせい+＊ ほん+を よむ|先生は本を読む',
+    'きょう+＊ あめ+が ふる|きょうは雨が降る',
+    'あに+＊ やきゅう+を する|兄は野球をする',
+    'かめ+＊ ゆっくり あるく|カメはゆっくり歩く',
+    'ぼく+の いえ+＊ ちかい|僕のいえは近い',
+    'か＊+で さかな+が およぐ|川で魚が泳ぐ',
+    'に＊+に はな+が さく|庭に花が咲く',
+    'でん＊+が りんりん なる|電話がりんりん鳴る',
+    'に＊とり+が たまご+を うむ|ニワトリが卵を産む',
+    'ともだち+と ＊なげ+を する|友達と輪投げをする',
+    'まど+から か＊+が みえる|窓から川が見える',
+    'みんな+で にこにこ ＊らう|みんなでにこにこ笑う',
+    'どうぶつえん+で ＊に+を みる|動物園でワニを見る'
+  ]
+};
+
+/* ===== 純粋関数 ===== */
+function dispOf(str){ return str.split('|')[0]; }
+function parseItem(str){
+  return dispOf(str).split(' ').map(function(b){
+    var i = b.indexOf('+');
+    return i < 0 ? {word:b, part:''} : {word:b.slice(0,i), part:b.slice(i+1)};
+  });
+}
+function answerOf(str){
+  var bs = parseItem(str);
+  for (var k=0;k<bs.length;k++){
+    if (bs[k].part.indexOf('＊') >= 0) return 'は';
+    if (bs[k].word.indexOf('＊') >= 0) return 'わ';
+  }
+  return null;
+}
+function speechText(str){
+  var k = str.split('|')[1];
+  return k ? k : dispOf(str).replace('＊', answerOf(str)).replace(/[+ ]/g,'');
+}
+function validItem(str){
+  var n = (dispOf(str).match(/＊/g)||[]).length;
+  if (n !== 1) return false;
+  var bs = parseItem(str);
+  for (var k=0;k<bs.length;k++){
+    if (bs[k].word === '') return false;
+    if (bs[k].part.indexOf('＊')>=0 && bs[k].part !== '＊') return false;
+  }
+  return answerOf(str) !== null;
+}
+function shuffle(a, rnd){
+  rnd = rnd || Math.random; a = a.slice();
+  for (var i=a.length-1;i>0;i--){ var j=Math.floor(rnd()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+/* 「わ」と「は」を半分ずつ、同じこたえは3回まで続けて出さない */
+function pickQuestions(pool, n, rnd){
+  rnd = rnd || Math.random;
+  var ha = shuffle(pool.filter(function(s){return answerOf(s)==='は';}), rnd);
+  var wa = shuffle(pool.filter(function(s){return answerOf(s)==='わ';}), rnd);
+  var nHa = Math.ceil(n/2), nWa = n - nHa;
+  if (rnd() < 0.5){ var t=nHa; nHa=nWa; nWa=t; }
+  nHa = Math.min(nHa, ha.length); nWa = Math.min(n - nHa, wa.length);
+  var base = ha.slice(0,nHa).concat(wa.slice(0,nWa)), out = base;
+  for (var t=0;t<500;t++){
+    out = shuffle(base, rnd);
+    if (maxRun(out) <= 3) break;
+  }
+  return out;
+}
+function maxRun(list){
+  var m = 0, run = 0, last = null;
+  list.forEach(function(s){ var c = answerOf(s); run = (c===last) ? run+1 : 1; last = c; if (run>m) m = run; });
+  return m;
+}
+
+/* ===== 状態 ===== */
+var settings = {stage:'short', count:'5', frame:'on', voice:'on'};
+var state = {list:[], idx:0, answered:false, frameNow:false};
+
+var $ = function(id){ return document.getElementById(id); };
+function show(id){
+  ['menu','q','end'].forEach(function(s){ $(s).classList.toggle('on', s===id); });
+}
+
+/* メニューの選択ボタン */
+document.querySelectorAll('.seg').forEach(function(seg){
+  var key = seg.dataset.key;
+  seg.querySelectorAll('button').forEach(function(b){
+    b.classList.toggle('sel', b.dataset.v === settings[key]);
+    b.addEventListener('click', function(){
+      settings[key] = b.dataset.v;
+      seg.querySelectorAll('button').forEach(function(x){ x.classList.toggle('sel', x===b); });
+    });
+  });
+});
+
+function poolFor(stage){
+  return stage==='mix' ? ITEMS.short.concat(ITEMS.long) : ITEMS[stage];
+}
+
+function startGame(){
+  state.list = pickQuestions(poolFor(settings.stage), parseInt(settings.count,10));
+  state.idx = 0;
+  $('speakBtn').classList.toggle('hide', settings.voice !== 'on' || !('speechSynthesis' in window));
+  show('q');
+  showQuestion();
+}
+
+function renderSentence(str, frame, filled){
+  var ans = answerOf(str), box = $('sentence');
+  box.className = 'sentence' + (frame ? ' frame' : '');
+  box.innerHTML = '';
+  parseItem(str).forEach(function(b){
+    var bun = document.createElement('span'); bun.className = 'bun';
+    [['w',b.word],['pt',b.part]].forEach(function(p){
+      if (!p[1]) return;
+      var sp = document.createElement('span'); sp.className = p[0];
+      p[1].split('').forEach(function(ch){
+        if (ch === '＊'){
+          var bl = document.createElement('span');
+          bl.className = 'blank';
+          bl.id = 'blank';
+          if (filled){
+            var ch = document.createElement('span'); ch.className = 'ch'; ch.textContent = ans; bl.appendChild(ch);
+            bl.className = 'blank filled ' + (ans==='は' ? 'ha' : 'wa');
+            var m = document.createElement('span'); m.className = 'maru on'; m.id = 'maru';
+            bl.appendChild(m);
+          }
+          sp.appendChild(bl);
+        } else sp.appendChild(document.createTextNode(ch));
+      });
+      bun.appendChild(sp);
+    });
+    box.appendChild(bun);
+  });
+}
+
+function renderDots(){
+  var d = $('dots'); d.innerHTML = '';
+  state.list.forEach(function(_,i){
+    var e = document.createElement('i');
+    if (i < state.idx) e.className = 'done';
+    else if (i === state.idx) e.className = 'now';
+    d.appendChild(e);
+  });
+}
+
+function showQuestion(){
+  var str = state.list[state.idx];
+  state.answered = false;
+  state.frameNow = settings.frame === 'on';
+  renderSentence(str, state.frameNow, false);
+  renderDots();
+  $('yomi').innerHTML = '';
+  $('msg').textContent = '';
+  document.querySelectorAll('.choice').forEach(function(b){ b.disabled = false; b.classList.remove('hidden'); });
+  $('nextBtn').classList.add('hidden');
+  speak();
+}
+
+function choose(c){
+  if (state.answered) return;
+  var str = state.list[state.idx], ans = answerOf(str);
+  if (c === ans){
+    state.answered = true;
+    renderSentence(str, state.frameNow, true);
+    if (ans === 'は'){
+      $('blank').classList.add('attach');
+      $('yomi').innerHTML = 'よみかた <span class="r">わ</span>　かきかた <span class="k">は</span>';
+      $('msg').textContent = 'ことばの うしろに くっついているね';
+    } else {
+      $('yomi').innerHTML = '';
+      $('msg').textContent = 'ことばの なかの「わ」だね';
+    }
+    document.querySelectorAll('.choice').forEach(function(b){ b.classList.add('hidden'); });
+    $('nextBtn').classList.remove('hidden');
+  } else {
+    document.querySelector('.choice[data-c="'+c+'"]').disabled = true;
+    $('msg').textContent = 'ことばの なかかな？　うしろに くっついているかな？';
+  }
+}
+
+function next(){
+  state.idx++;
+  if (state.idx >= state.list.length){ stopSpeak(); show('end'); }
+  else showQuestion();
+}
+
+/* ===== よみあげ ===== */
+var jaVoice = null;
+function pickVoice(){
+  if (!('speechSynthesis' in window)) return;
+  var vs = speechSynthesis.getVoices().filter(function(v){ return /^ja/i.test(v.lang); });
+  jaVoice = vs[0] || null;
+}
+if ('speechSynthesis' in window){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+function speak(){
+  if (settings.voice !== 'on' || !('speechSynthesis' in window)) return;
+  var u = new SpeechSynthesisUtterance(speechText(state.list[state.idx]));
+  u.lang = 'ja-JP'; u.rate = 0.8;
+  if (jaVoice) u.voice = jaVoice;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){ if ('speechSynthesis' in window) speechSynthesis.cancel(); }
+
+/* ===== イベント ===== */
+$('startBtn').addEventListener('click', startGame);
+$('againBtn').addEventListener('click', startGame);
+$('toMenuBtn').addEventListener('click', function(){ show('menu'); });
+$('backBtn').addEventListener('click', function(){ stopSpeak(); show('menu'); });
+$('speakBtn').addEventListener('click', speak);
+$('nextBtn').addEventListener('click', next);
+document.querySelectorAll('.choice').forEach(function(b){
+  b.addEventListener('click', function(){ choose(b.dataset.c); });
+});
+document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+</script>
+</body>
+</html>
